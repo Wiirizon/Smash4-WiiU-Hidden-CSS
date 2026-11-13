@@ -187,19 +187,12 @@ static WUPSConfigAPICallbackStatus menu_build_failed(const char *step) {
 }
 
 static WUPSConfigAPICallbackStatus on_menu_opened(WUPSConfigCategoryHandle root) {
-    WUPSConfigCategoryHandle settings;
-    WUPSConfigAPICreateCategoryOptionsV1 options = {.name = "Settings"};
-    if (WUPSConfigAPI_Category_Create(options, &settings) != WUPSCONFIG_API_RESULT_SUCCESS) {
-        return menu_build_failed("category create");
-    }
-    /* Shows ON while a failed removal still holds the patch, so the menu never hides a live hook. */
+    /* The item sits directly on the plugin's root page, so no sub-category has to be opened to see it.
+     * It shows ON while a failed removal still holds the patch, so the menu never hides a live hook. */
     bool shown = setting_wanted || guard_state.has_handle;
-    if (WUPSConfigItemBoolean_AddToCategory(settings, SETTING_ENABLED_KEY, SETTING_LABEL, GUARD_DEFAULT_ENABLED,
+    if (WUPSConfigItemBoolean_AddToCategory(root, SETTING_ENABLED_KEY, SETTING_LABEL, GUARD_DEFAULT_ENABLED,
                                             shown, on_setting_changed) != WUPSCONFIG_API_RESULT_SUCCESS) {
         return menu_build_failed("item add");
-    }
-    if (WUPSConfigAPI_Category_AddCategory(root, settings) != WUPSCONFIG_API_RESULT_SUCCESS) {
-        return menu_build_failed("category add");
     }
     return WUPSCONFIG_API_CALLBACK_RESULT_SUCCESS;
 }
