@@ -154,6 +154,27 @@ static void test_combined_restore_changes_only_giga(void) {
     CHECK(only_giga);
 }
 
+/* ---- Form table: all four pairs, independent of the enabled mask ---- */
+static void test_form_table_maps_all_four_forms(void) {
+    CHECK(sizeof form_restore_pairs / sizeof form_restore_pairs[0] == 4u);
+    CHECK(form_restore_alternate(58u, 15u) == 58u);
+    CHECK(form_restore_alternate(59u, 22u) == 59u);
+    CHECK(form_restore_alternate(60u, 41u) == 60u);
+    CHECK(form_restore_alternate(61u, 30u) == 61u);
+    /* A form paired with another form's base is not restored. */
+    CHECK(form_restore_alternate(59u, 15u) == 15u);
+    CHECK(form_restore_alternate(60u, 22u) == 22u);
+    CHECK(form_restore_alternate(61u, 41u) == 41u);
+    CHECK(form_restore_alternate(58u, 30u) == 30u);
+    /* IDs outside the table are never restored. */
+    CHECK(form_restore_alternate(62u, 30u) == 30u);
+    CHECK(form_restore_alternate(57u, 15u) == 15u);
+    /* Disabled forms 59-61 never restore through the guard, even with their correct base. */
+    CHECK(guard_restored_alternate(59u, 22u) == 22u);
+    CHECK(guard_restored_alternate(60u, 41u) == 41u);
+    CHECK(guard_restored_alternate(61u, 30u) == 30u);
+}
+
 /* ---- Reason texts ---- */
 static void test_first_rejection(void) {
     bool seen = false;
@@ -555,6 +576,7 @@ int main(void) {
     test_may_read_entry();
     test_restored_alternate_never_writes_outside_giga();
     test_combined_restore_changes_only_giga();
+    test_form_table_maps_all_four_forms();
     test_first_rejection();
     test_reason_texts();
     test_preflight_each_reason();
